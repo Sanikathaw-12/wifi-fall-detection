@@ -4,11 +4,13 @@ from load_data import load_UT_HAR_data
 import torch
 import torch.nn as nn
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, recall_score, classification_report
+from sklearn.metrics import accuracy_score, recall_score, fbeta_score, classification_report
+
+torch.manual_seed(42)  # reproducibility
 
 data = load_UT_HAR_data('../data')
 
-X_train = data['X_train'].squeeze(1)  # (samples, 250, 90)
+X_train = data['X_train'].squeeze(1)
 X_test = data['X_test'].squeeze(1)
 y_train = (data['y_train'] == 1).long()
 y_test = (data['y_test'] == 1).long()
@@ -66,11 +68,26 @@ for epoch in range(60):
         print(f"Epoch {epoch}, Val Loss: {val_loss.item():.4f}")
 
 model.load_state_dict(best_state)
-
 model.eval()
-with torch.no_grad():
-    preds = model(X_test).argmax(dim=1)
 
-print("Accuracy:", accuracy_score(y_test, preds))
-print("Recall on fall:", recall_score(y_test, preds))
-print(classification_report(y_test, preds, target_names=['not_fall', 'fall']))
+with torch.no_grad():
+    val_probs = torch.softmax(model(X_val), dim=1)[:, 1]
+    test_probs = torch.softmax(model(X_test), dim=1)[:, 1]
+
+# search thresholds using F2-score (weights recall 2x more than precision)
+best_thresh = 0.5
+best_f2 = 0
+for thresh in [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95]:
+    val_preds = (val_probs >= thresh).long()
+    f2 = fbeta_score(y_val, val_preds, beta=2)
+    print(f"Threshold {thresh}: F2={f2:.3f}")
+    if f2 > best_f2:
+        best_f2 = f2
+        best_thresh = thresh
+
+print(f"\nBest threshold (recall-weighted): {best_thresh}")
+
+test_preds = (test_probs >= best_thresh).long()
+print("Accuracy:", accuracy_score(y_test, test_preds))
+print("Recall on fall:", recall_score(y_test, test_preds))
+print(classification_report(y_test, test_preds, target_names=['not_fall', 'fall']))

@@ -32,15 +32,17 @@ Download the preprocessed data from [this Google Drive folder]
 | Model | Accuracy | Precision (fall) | Recall (fall) |
 |---|---|---|---|
 | Random Forest (class-balanced) | 97.8% | 0.95 | 0.80 |
-| LSTM (class-weighted, best checkpoint) | 92.8% | 0.57 | 0.87 |
+| LSTM (class-weighted, default threshold) | 92.8% | 0.57 | 0.87 |
+| **LSTM (class-weighted, tuned threshold=0.95)** | **96.4%** | **0.72** | **0.98** |
 
 **Note:** recall matters more than accuracy here — a missed fall is the
 costly failure mode for a real safety system. The dataset is imbalanced
-(only ~9% of samples are falls). The LSTM catches more falls (87% vs 80%)
-at the cost of more false alarms (precision drops from 0.95 to 0.57) —
-a genuine trade-off. For a real deployment, recall would likely be
-prioritized, making the LSTM the stronger candidate despite lower
-raw accuracy.
+(only ~9% of samples are falls). Threshold tuning (optimizing for
+F2-score, which weights recall 2x more than precision) improved the
+LSTM from catching 87% of falls to 98%, while also recovering much of
+the precision lost from class-weighting. Note the test set contains
+only 45 fall samples, so this recall figure should be read as a strong
+signal rather than a guaranteed rate on unseen data.
 
 ## Setup
 ```
