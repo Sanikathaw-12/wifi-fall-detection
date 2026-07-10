@@ -29,19 +29,18 @@ Download the preprocessed data from [this Google Drive folder]
 - Model: Random Forest (class-balanced, to handle fall being a minority class)
 
 ## Results
-| Metric | Score |
-|---|---|
-| Overall accuracy | 97.8% |
-| Precision (fall) | 0.95 |
-| Recall (fall) | 0.80 |
+| Model | Accuracy | Precision (fall) | Recall (fall) |
+|---|---|---|---|
+| Random Forest (class-balanced) | 97.8% | 0.95 | 0.80 |
+| LSTM (class-weighted, best checkpoint) | 92.8% | 0.57 | 0.87 |
 
 **Note:** recall matters more than accuracy here — a missed fall is the
 costly failure mode for a real safety system. The dataset is imbalanced
-(only ~9% of samples are falls), so accuracy alone is misleading;
-class-balanced training improved fall recall from 0.78 → 0.80 at a small
-cost to precision.
-
-![Fall vs walk CSI amplitude](results/fall_vs_walk.png)
+(only ~9% of samples are falls). The LSTM catches more falls (87% vs 80%)
+at the cost of more false alarms (precision drops from 0.95 to 0.57) —
+a genuine trade-off. For a real deployment, recall would likely be
+prioritized, making the LSTM the stronger candidate despite lower
+raw accuracy.
 
 ## Setup
 ```
