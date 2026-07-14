@@ -59,3 +59,20 @@ Data loading approach adapted from [SenseFi]
 - Deep learning models (LSTM/CNN) on raw CSI instead of handcrafted features
 - Real hardware capture using ESP32 CSI Tool for live testing
 - Multimodal fusion with accelerometer-based fall detection
+
+
+## Hardware validation (ESP32 CSI capture)
+Beyond the UT-HAR dataset, I validated the core hypothesis on my own
+ESP32 hardware (ESP32 dev board as AP, running Espressif's CSI-enabled
+ESP-IDF firmware from the ESP32-CSI-Tool project). I captured RSSI/CSI
+data across four labeled activities (still, walk, fall, standup).
+
+![Activity comparison](results/my_activities_comparison.png)
+
+RSSI alone clearly separates "still" (bounded, ~15 dBm range) from
+active movement (all three movement activities show 20+ dBm swings),
+confirming that WiFi signal disruption reliably detects human motion.
+Distinguishing fall specifically from walk/standup using RSSI alone
+proved harder — consistent with why CSI research prefers the full
+multi-subcarrier CSI array over RSSI, since RSSI is a single-value
+summary that loses the finer-grained frequency information CSI provides.

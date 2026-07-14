@@ -2,3 +2,6 @@ data/
 *.h5
 *.npy
 __pycache__/
+build/
+sdkconfig
+sdkconfig.old
