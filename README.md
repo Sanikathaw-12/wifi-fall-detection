@@ -64,15 +64,27 @@ Data loading approach adapted from [SenseFi]
 ## Hardware validation (ESP32 CSI capture)
 Beyond the UT-HAR dataset, I validated the core hypothesis on my own
 ESP32 hardware (ESP32 dev board as AP, running Espressif's CSI-enabled
-ESP-IDF firmware from the ESP32-CSI-Tool project). I captured RSSI/CSI
-data across four labeled activities (still, walk, fall, standup).
+ESP-IDF firmware from the ESP32-CSI-Tool project). I captured CSI data
+across four labeled activities (still, walk, fall, standup).
 
 ![Activity comparison](results/my_activities_comparison.png)
+![CSI energy comparison](results/my_csi_energy_comparison.png)
 
-RSSI alone clearly separates "still" (bounded, ~15 dBm range) from
-active movement (all three movement activities show 20+ dBm swings),
-confirming that WiFi signal disruption reliably detects human motion.
-Distinguishing fall specifically from walk/standup using RSSI alone
-proved harder — consistent with why CSI research prefers the full
-multi-subcarrier CSI array over RSSI, since RSSI is a single-value
-summary that loses the finer-grained frequency information CSI provides.
+Using "movement energy" (mean packet-to-packet change across all 128
+CSI subcarrier values) as a simple feature, the four activities ordered
+exactly as physically expected:
+
+| Activity | Mean CSI energy |
+|---|---|
+| Still | 13.2 |
+| Walk | 14.1 |
+| Standup | 16.3 |
+| Fall | 17.4 |
+
+Fall shows the highest signal disruption, consistent with it being the
+most abrupt movement. Ranges still overlap across a single ~15-second
+trial per activity — this experiment validates the underlying physical
+principle (WiFi CSI is sensitive to fall-like movement) rather than
+serving as a production classifier, which is what the trained ML models
+above (Random Forest, LSTM) are for, using thousands of labeled samples
+rather than a single live take.
