@@ -88,3 +88,28 @@ principle (WiFi CSI is sensitive to fall-like movement) rather than
 serving as a production classifier, which is what the trained ML models
 above (Random Forest, LSTM) are for, using thousands of labeled samples
 rather than a single live take.
+
+
+## Live demo: real-time alert system
+
+Beyond offline analysis, I built a live monitoring script that reads
+CSI data from the ESP32 in real time, detects a fall signature
+(a sharp movement spike followed by sustained stillness), and sends
+an SMS alert via Twilio to a caregiver's phone.
+
+**Known limitation:** motion-energy-based detection cannot distinguish
+a real fall from other rapid-movement-then-stillness events, such as
+lying down to sleep — both produce the same signal shape. This is a
+documented limitation of amplitude-based CSI sensing generally, not
+specific to this implementation.
+
+The correct real-world handling for this — consistent with how
+commercial fall-alert systems are designed — is to route alerts to a
+caregiver or monitoring service rather than requiring the monitored
+person to self-confirm. A false alarm costs a quick check-in call; a
+missed real fall is far more costly, so the system is intentionally
+tuned toward sensitivity over specificity. Reducing false positives
+further would require either a longer observed stillness duration,
+multiple confirming signals (e.g. fused with a wearable accelerometer,
+see Future Work), or time-of-day context (e.g. suppressing alerts
+during typical sleep hours).
